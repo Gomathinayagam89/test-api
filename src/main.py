@@ -7,13 +7,13 @@ app = FastAPI()
 
 # Define a regex pattern for restricted characters.
 # Restricted characters: \ / : * ? " < > ; # $ * { } , + = [ ]
-restricted_pattern = re.compile(r'[\\\/:\*\?"<>;#$\{\},\+=\[\]]')
+# restricted_pattern = re.compile(r'[\\\/:\*\?"<>;#$\{\},\+=\[\]]')
 
 @app.get("/generate_url/")
 def generate_url(user_input: str):
     # Validate: Reject input if any restricted characters are found.
-    if restricted_pattern.search(user_input):
-        raise HTTPException(status_code=400, detail="Invalid characters in input")
+    # if restricted_pattern.search(user_input):
+    #    raise HTTPException(status_code=400, detail="Invalid characters in input")
     
     # URL-encode the input to safely insert into the URL path.
     safe_user_input = urllib.parse.quote(user_input, safe='')

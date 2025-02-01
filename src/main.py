@@ -5,28 +5,25 @@ import requests
 
 app = FastAPI()
 
-# Define a regex pattern that matches any of the restricted characters.
-restricted_pattern = re.compile(r'[\\\/:\*\?"<>;#$\{\},\+=\[\]\|]')
+# Define a regex pattern for the restricted characters.
+# The characters are: \ / : * ? " < > ; # $ * { } , + = [ ]
+# Note: The '*' appears twice; only one occurrence is necessary.
+restricted_pattern = re.compile(r'[\\\/:\*\?"<>;#$\{\},\+=\[\]]')
 
 @app.get("/generate_url/")
 def generate_url(user_input: str):
-    # Check if the input contains any restricted characters.
+    # Validate: Reject input if any restricted characters are found.
     if restricted_pattern.search(user_input):
         raise HTTPException(status_code=400, detail="Invalid characters in input")
 
-    # Prepare the base URL parts.
-    scheme = "https"
-    netloc = "example.com"
-    path = "/foo"
-    params = ""
-    query = ""
-    # Only the fragment comes from user input, and fragments are not sent over HTTP.
-    fragment = urllib.parse.quote(user_input)
+    # URL-encode the input so it safely becomes part of the path.
+    # The safe parameter is set to an empty string to force encoding of all characters.
+    safe_user_input = urllib.parse.quote(user_input, safe='')
 
-    # Reassemble the URL.
-    url = urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
+    # Construct the URL by inserting the encoded input into the path.
+    url = f"https://example.com/foo/{safe_user_input}"
 
-    # Make the request.
-    requests.get(url)
+    # Make the HTTP request.
+    response = requests.get(url)
 
-    return {'status': 'success'}
+    return {'status': 'success', 'requested_url': url, 'response_status': response.status_code}

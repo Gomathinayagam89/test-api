@@ -6,19 +6,27 @@ import requests
 app = FastAPI()
 
 # Define a regex pattern that matches any of the restricted characters.
-# The restricted characters are: \ / : * ? " < > ; # $ * { } , + = [ ] |
-# Note: Some characters are escaped since they have special meanings in regex.
 restricted_pattern = re.compile(r'[\\\/:\*\?"<>;#$\{\},\+=\[\]\|]')
 
 @app.get("/generate_url/")
 def generate_url(user_input: str):
-    # Check if the input contains any restricted characters using regex.
+    # Check if the input contains any restricted characters.
     if restricted_pattern.search(user_input):
         raise HTTPException(status_code=400, detail="Invalid characters in input")
 
-    # Construct the safe URL, encoding the fragment appropriately.
-    url = f"https://example.com/foo#{urllib.parse.quote(user_input)}"
-    
+    # Prepare the base URL parts.
+    scheme = "https"
+    netloc = "example.com"
+    path = "/foo"
+    params = ""
+    query = ""
+    # Only the fragment comes from user input, and fragments are not sent over HTTP.
+    fragment = urllib.parse.quote(user_input)
+
+    # Reassemble the URL.
+    url = urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
+
+    # Make the request.
     requests.get(url)
 
     return {'status': 'success'}
